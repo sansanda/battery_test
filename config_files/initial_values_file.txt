@@ -1,12 +1,11 @@
 Electronic Load GPIBAddr=5
 Keithley 3706 GPIBAddr=25
-Current=40
-Current Range=60
+Current=5
+Current Range=5
 *Low:0-6A, High:0-60A*
 Slew Rate=1E2
 *total_time in minutes
 total_time=6000
 *measure battery current and voltage every measure_period in seconds
-measure_period=1
-Voltage channel=1001
-Csv file path=.\result_files\battery_test_results.csv
+measure_period=0.5
+Csv file path=..\result_files\battery_test_results.csv
