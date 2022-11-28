@@ -141,11 +141,8 @@ if check_parameters(total_time,
                     curr):
     exit()  # If any mentioned fact has happened, the program exits.
 
-# Define the total number of channels
-nChannels = 2
-
 # CREATE AND OPEN THE CSV FILE TO TRANSFR THE ACQUIRED DATA
-field_names = ['Time (seconds)', 'Battery Voltage', 'Battery Current']  # Create an array of constant headers
+field_names = ['Time Stamp (seconds)', 'Battery Voltage', 'Battery Current']  # Create an array of constant headers
 
 csv_connection.create_csv_file(csv_file_path, field_names)  # Open the csv file and write the array of headers
 
@@ -194,7 +191,8 @@ try:
         Measures the voltage on the multimeter dmm
         """
         #aqui medimos tanto corriente de la carga electronica como voltage del multimetro
-
+        actual_curr = electronic_load.query('MEASure:CURRent:DC?')
+        print(actual_curr)
 
         #acto seguido escribimos en el fichero de resultados
 
