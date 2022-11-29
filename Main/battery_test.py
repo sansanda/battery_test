@@ -241,6 +241,7 @@ def main(_electronic_load, _multimeter, _parameters) -> int:
 
     timer.start()  # The timer is started
 
+    return 0
 
 if __name__ == '__main__':
     config_file_rel_path = '..\config_files\initial_values_file.txt'
