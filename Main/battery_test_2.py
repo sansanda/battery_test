@@ -12,7 +12,34 @@ from tkinter import messagebox
 import pyvisa
 import sys
 from Main import csv_connection
-from Utilities.time_utilities import RepeatedTimer
+from threading import Timer
+
+
+class RepeatedTimer(object):
+    def __init__(self, interval, function, *args, **kwargs):
+        self._timer = None
+        self.interval = interval
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
+        self.is_running = False
+        self.start()
+
+    def _run(self):
+        self.is_running = False
+        self.start()
+        self.function(*self.args, **self.kwargs)
+
+    def start(self):
+        if not self.is_running:
+            self._timer = Timer(self.interval, self._run)
+            self._timer.start()
+            self.is_running = True
+
+    def stop(self):
+        self._timer.cancel()
+        self.is_running = False
+
 
 TOTAL_TIME_MIN = 0
 MEASURE_PERIOD_MIN = 0.1
@@ -176,8 +203,33 @@ def measure(_electronic_load, _multimeter, results_file_rel_path):
     print(f"multimeter voltage: {actual_multimeter_voltage.strip()} Volts.\n"
           f"load current: {actual_electronic_load_curr.strip()} Amps.\n")
 
+
 # STOP BUTTON
 stop = 0  # Boolean in order to stop the electronic load whenever necessary.
+
+
+def measure_x_times(_electronic_load, _multimeter, results_file_rel_path, interval, times):
+    past_time_ref = 0
+    elapsed_time = 0
+
+    for i in range(0, times, 1):
+        time.sleep(interval - elapsed_time)
+        past_time_ref = time.time()
+        measure(_electronic_load, _multimeter, results_file_rel_path)
+        elapsed_time = time.time() - past_time_ref
+
+    return 0
+
+
+def measure_forever(_electronic_load, _multimeter, results_file_rel_path, interval):
+    past_time_ref = 0
+    elapsed_time = 0
+
+    while True:
+        time.sleep(interval - elapsed_time)
+        past_time_ref = time.time()
+        measure(_electronic_load, _multimeter, results_file_rel_path)
+        elapsed_time = time.time() - past_time_ref
 
 
 def exit_function(_electronic_load):
@@ -205,16 +257,13 @@ def main(_electronic_load, _multimeter, _parameters) -> int:
                               _parameters["current_range"],
                               _parameters["slew_rate"])
 
-    # TIMER
-    timer = RepeatedTimer(_parameters["measure_period"],
-                          measure,
-                          _electronic_load,
-                          _multimeter,
-                          _parameters["results_file_rel_path"])
-
-    timer.start()  # The timer is started
+    measure_forever(_electronic_load,
+                    _multimeter,
+                    _parameters["results_file_rel_path"],
+                    _parameters["measure_period"],)
 
     return 0
+
 
 if __name__ == '__main__':
     config_file_rel_path = '..\config_files\initial_values_file.txt'
