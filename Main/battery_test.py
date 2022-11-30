@@ -65,7 +65,7 @@ def readConfigFile(file_path):
         if 'Current' in line:  # Search where is curr in the file, just in case the order of the values changes
             parameters["current"] = float(line[line.index('=') + 1:])  # Impose the value of the low current level
             print('Current is: ', parameters["current"], ' Amps')
-        if 'Slew Rate' in line:
+        if 'Slew_Rate' in line:
             parameters["slew_rate"] = float(line[line.index('=') + 1:])  # Slew rate
             print('Slew Rate is:', parameters["slew_rate"])
         if 'total_time' in line:
@@ -80,7 +80,7 @@ def readConfigFile(file_path):
             parameters["voltage_channel"] = float(line[line.index('=') + 1:])
             print('Voltage channel:',
                   parameters["voltage_channel"])  # .replace because the split introduce a new line after the match
-        if 'Current Range' in line:
+        if 'Range' in line:
             parameters["current_range"] = float(
                 line[line.index('=') + 1:])  # Set the desired current range (LOW (0-6A) or HIGH(0-60A))
             print('Current Rang:', parameters["current_range"], 'A')
@@ -196,6 +196,8 @@ def measure(_electronic_load, _multimeter, results_file_rel_path):
     actual_electronic_load_curr = _electronic_load.query('MEASure:CURRent:DC?')
     _multimeter.write("dmm.close('1001')")
     actual_multimeter_voltage = _multimeter.query("print(dmm.measure())")
+    actual_electronic_load_curr = actual_electronic_load_curr.strip()
+    actual_multimeter_voltage = actual_multimeter_voltage.strip()
     # acto seguido escribimos en el fichero de resultados
     csv_connection.insertRowInCSV(results_file_rel_path,
                                   [time.time(), actual_multimeter_voltage, actual_electronic_load_curr])
