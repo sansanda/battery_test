@@ -195,11 +195,12 @@ def measure(_electronic_load, _multimeter, results_file_rel_path):
     # start_scan_multimeter()
     actual_electronic_load_curr = _electronic_load.query('MEASure:CURRent:DC?')
     _multimeter.write("dmm.close('1001')")
-    actual_multimeter_voltage = _multimeter.query("print(dmm.measure())")
+    # actual_multimeter_voltage = _multimeter.query("print(dmm.measure())")
+    actual_multimeter_voltage, seconds, fraction = _multimeter("print(dmm.measurewithtime())")
     # acto seguido escribimos en el fichero de resultados
     csv_connection.insertRowInCSV(results_file_rel_path,
                                   [time.time(), actual_multimeter_voltage, actual_electronic_load_curr])
-
+    _multimeter.write("dmm.open('1001')")
     print(f"multimeter voltage: {actual_multimeter_voltage.strip()} Volts.\n"
           f"load current: {actual_electronic_load_curr.strip()} Amps.\n")
 
