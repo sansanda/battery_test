@@ -12,7 +12,7 @@ from tkinter import messagebox
 import pyvisa
 import sys
 from Main import csv_connection
-from Utilities.time_utilities import RepeatedTimer
+
 
 TOTAL_TIME_MIN = 0
 MEASURE_PERIOD_MIN = 0.1
@@ -166,20 +166,51 @@ def measure(_electronic_load, _multimeter, results_file_rel_path):
     # aqui medimos tanto corriente de la carga electronica como voltage del multimetro
 
     # start_scan_multimeter()
-    actual_electronic_load_curr = _electronic_load.query('MEASure:CURRent:DC?')
     _multimeter.write("dmm.close('1001')")
-    actual_multimeter_voltage = _multimeter.query("print(dmm.measure())")
-    actual_electronic_load_curr = actual_electronic_load_curr.strip()
-    actual_multimeter_voltage = actual_multimeter_voltage.strip()
-    # acto seguido escribimos en el fichero de resultados
-    csv_connection.insertRowInCSV(results_file_rel_path,
-                                  [time.time(), actual_multimeter_voltage, actual_electronic_load_curr])
+    actual_electronic_load_curr = _electronic_load.query('MEASure:CURRent:DC?')
+    actual_electronic_load_curr = float(''.join(actual_electronic_load_curr.strip()))
+    reading = _multimeter.query("print(dmm.measurewithtime())")
+    reading = reading.split("\t")
+    actual_multimeter_voltage = float(''.join(reading[0].split()))
+    seconds = float(''.join(reading[1].split()))
+    seconds_fraction = float(''.join(reading[2].split()))
 
-    print(f"multimeter voltage: {actual_multimeter_voltage.strip()} Volts.\n"
-          f"load current: {actual_electronic_load_curr.strip()} Amps.\n")
+    print('{0:.3f}'.format(seconds + seconds_fraction),
+          '{0:.3f}'.format(actual_multimeter_voltage),
+          '{0:.3f}'.format(actual_electronic_load_curr),
+          sep="\t\t,")
+
+    # acto seguido escribimos en el fichero de resultados
+    csv_connection.insertRowInCSV(results_file_rel_path, [seconds + seconds_fraction,
+                                                          actual_multimeter_voltage,
+                                                          actual_electronic_load_curr])
 
 # STOP BUTTON
 stop = 0  # Boolean in order to stop the electronic load whenever necessary.
+
+
+def measure_x_times(_electronic_load, _multimeter, results_file_rel_path, interval, times):
+    past_time_ref = 0
+    elapsed_time = 0
+
+    for i in range(0, times, 1):
+        time.sleep(interval - elapsed_time)
+        past_time_ref = time.time()
+        measure(_electronic_load, _multimeter, results_file_rel_path)
+        elapsed_time = time.time() - past_time_ref
+
+    return 0
+
+
+def measure_forever(_electronic_load, _multimeter, results_file_rel_path, interval):
+    past_time_ref = 0
+    elapsed_time = 0
+
+    while True:
+        time.sleep(interval - elapsed_time)
+        past_time_ref = time.time()
+        measure(_electronic_load, _multimeter, results_file_rel_path)
+        elapsed_time = time.time() - past_time_ref
 
 
 def exit_function(_electronic_load):
@@ -207,16 +238,13 @@ def main(_electronic_load, _multimeter, _parameters) -> int:
                               _parameters["current_range"],
                               _parameters["slew_rate"])
 
-    # TIMER
-    timer = RepeatedTimer(_parameters["measure_period"],
-                          measure,
-                          _electronic_load,
-                          _multimeter,
-                          _parameters["results_file_rel_path"])
-
-    timer.start()  # The timer is started
+    measure_forever(_electronic_load,
+                    _multimeter,
+                    _parameters["results_file_rel_path"],
+                    _parameters["measure_period"],)
 
     return 0
+
 
 if __name__ == '__main__':
     config_file_rel_path = '..\config_files\initial_values_file.txt'
