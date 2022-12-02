@@ -203,15 +203,10 @@ def measure_x_times(_electronic_load, _multimeter, results_file_rel_path, interv
 
 
 def measure_forever(_electronic_load, _multimeter, results_file_rel_path, interval):
-    past_time_ref = 0
-    elapsed_time = 0
 
     while True:
-        time.sleep(interval - elapsed_time)
-        past_time_ref = time.time()
         measure(_electronic_load, _multimeter, results_file_rel_path)
-        elapsed_time = time.time() - past_time_ref
-
+        time.sleep(interval)
 
 def exit_function(_electronic_load):
     print("EXITINGGG!!!")
@@ -255,5 +250,4 @@ if __name__ == '__main__':
 
     atexit.register(exit_function,
                     electronic_load)
-
     sys.exit(main(electronic_load, multimeter, parameters))  # next section explains the use of sys.exit
