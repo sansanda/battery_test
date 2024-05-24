@@ -1,7 +1,6 @@
-# PowerCycling
+# Discharge Battery Testing
 
-Project automatization power cycling over power electronics components.
+Simple program for testing the discharge I-V curve of experimental batteries using electronic load and keithley 3706
 Instrumets:
-  1. Electronic load
-  2. High power dc source
-  3. Multimeter
+  1. Electronic Load
+  3. Keithley Multimeter 3706A
